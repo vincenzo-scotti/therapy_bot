@@ -37,7 +37,7 @@ pip install -r requirements.txt
 To add the source code directory to the Python path, you can add this line to the file `~/.bashrc`
 
 ```bash
-export PYTHONPATH=$PYTHONPATH:/path/to/chatbot/src
+export PYTHONPATH=$PYTHONPATH:/path/to/therapy_bot/src
 ```
 
 ### Additional submodules
@@ -103,7 +103,7 @@ ps -elf | grep main.py
 If you are willing to use our code or our models, please cite our work through the following BibTeX entry:
 
 ```bibtex
-@phdthesis{DBLP:phd/it/Scotti23,
+@phdthesis{scotti-2023-generative,
   author    = {Vincenzo Scotti},
   title     = {Generative Empathetic Data-Driven Conversational Agents for Mental Healthcare},
   school    = {Polytechnic University of Milan, Italy},
