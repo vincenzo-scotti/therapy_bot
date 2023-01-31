@@ -1,0 +1,12 @@
+[submodule "submodules/programmable_chatbot"]
+	path = submodules/programmable_chatbot
+	url = https://github.com/vincenzo-scotti/programmable_chatbot.git
+[submodule "submodules/dldlm"]
+	path = submodules/dldlm
+	url = https://github.com/vincenzo-scotti/dldlm.git
+[submodule "submodules/dialogue_gst"]
+	path = submodules/dialogue_gst
+	url = https://github.com/vincenzo-scotti/dialogue_gst.git
+[submodule "submodules/tts_mellotron_api"]
+	path = submodules/tts_mellotron_api
+	url = https://github.com/vincenzo-scotti/tts_mellotron_api.git
