@@ -1,0 +1,51 @@
+# Global
+session_series: TB
+session_id: therapy_bot
+sessions_directory_path: ./sessions/
+
+random_seed: &random_seed 2307
+mixed_precision: true
+
+log_level: DEBUG
+log_file: true
+
+# Telegram
+telegram:
+  token: ...
+  evaluation_aspects:
+    - description: "Empathy measures how much the responses show understanding of the feelings of the other."
+      id: Empathy
+    - description: "Relevance is the measure how much the responses seem appropriate to the conversation and how much the responses are on-topic."
+      id: Relevance
+    - description: "Fluency is the measure of how much could you understand of the responses and how much the language seems accurate."
+      id: Fluency
+  authorised_users_file: ./resources/configs/users.txt
+
+# Chatbot modules
+chatbot:
+  # Speech
+  asr: medium.en
+  tts:
+    mellotron: ./resources/models/tts/mellotron/mellotron_libritts.pt
+    tacotron2: ./resources/models/tts/tacotron_2/tacotron2_statedict.pt
+    arpabet_dict: ./submodules/tts_mellotron_api/submodules/mellotron/data/cmu_dictionary
+  vocoder: ./resources/models/vocoder/waveglow/waveglow_256channels_universal_v4.pt
+  dgst:
+    style_predictor: ./resources/dgst/dgst_therapy_dldlm_from_ctx.pt
+    gpt2: &therapy_dldlm ./resources/models/lm/therapy_dldlm/
+  # Text
+  ppm_dlm:
+    model_kwargs:
+      model: &ppm_dlm ./resources/models/lm/ppm_dlm
+      tokenizer: *ppm_dlm
+    call_kwargs:
+      task: "The following is a therapy session between an empathetic therapist AI, called TherapyBot, and a person, called Patient.\n\nIn the following interactions, TherapyBot and Patient will converse in natural language. The Patient talks about his/hers issues to TherapyBot and TherapyBot helps the Patient to explore and solve his/hers problems. TherapyBot reacts empathetically giving informative and supportive responses.\nThe conversation is grounded in the persona description of the speakers.\nA persona description is a short description in a few sentences of the personal information of one or both speakers."
+      global_label: "Persona description of the speakers:\nTherapyBot persona: My name is TherapyBot and I am a therapist AI. I use empathy to connect with my patients. I want to help my patients feel better. I like offering support to people."
+      self_speaker_id: TherapyBot
+      other_speaker_id: User
+    generate_kwargs:
+      top_p: 0.9
+      top_k: 0
+      temperature: 1.0
+      do_sample: true
+      max_new_tokens: 128
