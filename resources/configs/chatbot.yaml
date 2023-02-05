@@ -23,29 +23,43 @@ telegram:
 
 # Chatbot modules
 chatbot:
+  # General
+  self_speaker_id: TherapyBot
+  other_speaker_id: User
   # Speech
-  asr: medium.en
+  asr:
+    whisper: medium.en
   tts:
     mellotron: ./resources/models/tts/mellotron/mellotron_libritts.pt
     tacotron2: ./resources/models/tts/tacotron_2/tacotron2_statedict.pt
     arpabet_dict: ./submodules/tts_mellotron_api/submodules/mellotron/data/cmu_dictionary
-  vocoder: ./resources/models/vocoder/waveglow/waveglow_256channels_universal_v4.pt
+  vocoder:
+    waveglow: ./resources/models/vocoder/waveglow/waveglow_256channels_universal_v4.pt
   dgst:
-    style_predictor: ./resources/dgst/dgst_therapy_dldlm_from_ctx.pt
-    gpt2: &therapy_dldlm ./resources/models/lm/therapy_dldlm/
+    gst_predictor:
+      dgst: ./resources/dgst/dgst_therapy_dldlm_from_ctx.pt
+    dldlm:
+      model: &therapy_dldlm ./resources/models/lm/therapy_dldlm/
+      tokenizer: *therapy_dldlm
+    module_params:
+      prefix_token: <|prior|>
+      suffix_token: <|posterior|>
+      encoding_mode: resp_from_ctx
+      max_context_length: 256
+    generator_params:
+      gst_prediction_approach: score
+      # tts_speaker_id: 0
   # Text
-  ppm_dlm:
-    model_kwargs:
+  dlm:
+    ppm_dlm:
       model: &ppm_dlm ./resources/models/lm/ppm_dlm
-      tokenizer: *ppm_dlm
-    call_kwargs:
+      tokenizer: gpt2
+    generator_params:
       task: "The following is a therapy session between an empathetic therapist AI, called TherapyBot, and a person, called Patient.\n\nIn the following interactions, TherapyBot and Patient will converse in natural language. The Patient talks about his/hers issues to TherapyBot and TherapyBot helps the Patient to explore and solve his/hers problems. TherapyBot reacts empathetically giving informative and supportive responses.\nThe conversation is grounded in the persona description of the speakers.\nA persona description is a short description in a few sentences of the personal information of one or both speakers."
       global_label: "Persona description of the speakers:\nTherapyBot persona: My name is TherapyBot and I am a therapist AI. I use empathy to connect with my patients. I want to help my patients feel better. I like offering support to people."
-      self_speaker_id: TherapyBot
-      other_speaker_id: User
-    generate_kwargs:
-      top_p: 0.9
-      top_k: 0
-      temperature: 1.0
-      do_sample: true
-      max_new_tokens: 128
+      generate_kwargs:
+        top_p: 0.9
+        top_k: 0
+        temperature: 1.0
+        do_sample: true
+        max_new_tokens: 128
