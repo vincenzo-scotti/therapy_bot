@@ -63,6 +63,7 @@ export PYTHONPATH=$PYTHONPATH:/path/to/chatbot/submodules/programmable_chatbot/s
 export PYTHONPATH=$PYTHONPATH:/path/to/chatbot/submodules/dldlm/src
 export PYTHONPATH=$PYTHONPATH:/path/to/chatbot/submodules/dialogue_gst/src
 export PYTHONPATH=$PYTHONPATH:/path/to/chatbot/submodules/tts_mellotron_api/src
+export PYTHONPATH=$PYTHONPATH:/path/to/chatbot/submodules/tts_mellotron_api/submodules
 export PYTHONPATH=$PYTHONPATH:/path/to/chatbot/submodules/tts_mellotron_api/submodules/mellotron
 export PYTHONPATH=$PYTHONPATH:/path/to/chatbot/submodules/tts_mellotron_api/submodules/mellotron/waveglow
 export PYTHONPATH=$PYTHONPATH:/path/to/chatbot/submodules/tts_mellotron_api/submodules/tacotron2
