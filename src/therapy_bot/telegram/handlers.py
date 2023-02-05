@@ -74,9 +74,18 @@ async def get_text_response(update: Update, context: CallbackContext) -> int:
     # Get message text and append it to the context
     message = update.message.text
     context.chat_data['conversation'].append({'speaker': therabot.user_id, 'text': message})
-    # Generate response using neural chatbot
-    response = therabot(context.chat_data['conversation'])
-    context.chat_data['conversation'].append({'speaker': therabot.chatbot_id, 'text': response})
+    try:
+        # Generate response using neural chatbot
+        response = therabot(context.chat_data['conversation'])
+        context.chat_data['conversation'].append({'speaker': therabot.chatbot_id, 'text': response})
+    except ValueError as e:
+        logging.error(e)
+        await update.message.reply_text(
+            "I'm sorry, the chatting service is not enabled in the current configuration. "
+            "Stop the chatbot and try again later."
+        )
+
+        return CHAT
     # Send response text to user
     await update.message.reply_text(response)
 
@@ -104,9 +113,18 @@ async def get_voice_response(update: Update, context: CallbackContext) -> int:
                 "You're welcome to write a text message."
             )
             return CHAT
-    # Generate response using neural chatbot
-    response = therabot(context.chat_data['conversation'])
-    context.chat_data['conversation'].append({'speaker': therabot.chatbot_id, 'text': response})
+    try:
+        # Generate response using neural chatbot
+        response = therabot(context.chat_data['conversation'])
+        context.chat_data['conversation'].append({'speaker': therabot.chatbot_id, 'text': response})
+    except ValueError as e:
+        logging.error(e)
+        await update.message.reply_text(
+            "I'm sorry, the chatting service is not enabled in the current configuration. "
+            "Stop the chatbot and try again later."
+        )
+
+        return CHAT
     # Synthesise response speech
     # Save voice response into temporary file
     with NamedTemporaryFile(suffix='.ogg') as voice_response:
