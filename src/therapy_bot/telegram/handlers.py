@@ -77,6 +77,7 @@ async def get_text_response(update: Update, context: CallbackContext) -> int:
     try:
         # Generate response using neural chatbot
         response = therabot(context.chat_data['conversation'])
+        logging.debug(f'Generated text response. Response text: "{message}", Context: {context.chat_data["conversation"]}')
         context.chat_data['conversation'].append({'speaker': therabot.chatbot_id, 'text': response})
     except ValueError as e:
         logging.error(e)
@@ -102,9 +103,9 @@ async def get_voice_response(update: Update, context: CallbackContext) -> int:
         voice_message.seek(0)
         try:
             # Get message text and append it to the context
-            context.chat_data['conversation'].append(
-                {'speaker': therabot.user_id, 'text': therabot.transcribe_message(voice_message.name)}
-            )
+            message = therabot.transcribe_message(voice_message.name)
+            logging.debug(f'Transcribed voice message. Transcripton text: "{message}"')
+            context.chat_data['conversation'].append({'speaker': therabot.user_id, 'text': message})
         except ValueError as e:
             logging.error(e)
             # Signal to the user that the transcription module is not avaialble
@@ -116,6 +117,7 @@ async def get_voice_response(update: Update, context: CallbackContext) -> int:
     try:
         # Generate response using neural chatbot
         response = therabot(context.chat_data['conversation'])
+        logging.debug(f'Generated text response. Response text: "{message}", Context: {context.chat_data["conversation"]}')
         context.chat_data['conversation'].append({'speaker': therabot.chatbot_id, 'text': response})
     except ValueError as e:
         logging.error(e)
@@ -135,6 +137,7 @@ async def get_voice_response(update: Update, context: CallbackContext) -> int:
                 context.chat_data['conversation'][-1],
                 context=context.chat_data['conversation'][:-1]
             )
+            logging.debug(f'Generated voice response.')
             # Reset file cursor to be sure
             voice_response.seek(0)
             # Send response voice message to user
