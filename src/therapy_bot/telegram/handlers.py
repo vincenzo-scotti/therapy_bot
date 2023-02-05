@@ -129,6 +129,7 @@ async def get_voice_response(update: Update, context: CallbackContext) -> int:
         return CHAT
     # Synthesise response speech
     # Save voice response into temporary file
+    # TODO handle long responses splitting into multiple files (use nltk sentence tokeniser and iterate over result)
     with NamedTemporaryFile(suffix='.ogg') as voice_response:
         try:
             # Synthesise speech
