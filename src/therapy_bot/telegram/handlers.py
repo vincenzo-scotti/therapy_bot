@@ -30,11 +30,10 @@ def restricted_access(func):
     def wrapped(update, context, *args, **kwargs):
         global authorised_users
         user_id = update.effective_user.id
-        if authorised_users is not None and user_id not in authorised_users:  # Check IDs only of list is provided
-            logging.info("Unauthorized access denied for user ID {}".format(user_id))
-            return
-        else:
+        if authorised_users is not None and user_id in authorised_users:  # Check IDs only of list is provided
             return func(update, context, *args, **kwargs)
+        else:
+            return
     return wrapped
 
 
@@ -87,19 +86,40 @@ async def get_text_response(update: Update, context: CallbackContext) -> int:
 @restricted_access
 async def get_voice_response(update: Update, context: CallbackContext) -> int:
     # Generate a written and spoken response message to a voice message
-    #
-    # Get message text and append it to the context
-    message = update.message.text
-    context.chat_data['conversation'].append({'speaker': therabot.user_id, 'text': message})
+    if therabot.transcripton:
+        # Save voice message into temporary file
+        with NamedTemporaryFile(suffix='.ogg') as voice_message:
+            await update.message.voice.get_file().download_to_drive(custom_path=voice_message.name)
+            # Reset file cursor to be sure
+            voice_message.seek(0)
+            # Get message text and append it to the context
+            context.chat_data['conversation'].append(
+                {'speaker': therabot.user_id, 'text': therabot.transcribe_message(voice_message.name)}
+            )
+    else:
+        # Signal
+        await update.message.reply_text(
+            "I'm sorry, the transcription service is not enabled in the current configuration. "
+            "You're welcome to write a text message."
+        )
+        return CHAT
     # Generate response using neural chatbot
     response = therabot(context.chat_data['conversation'])
     context.chat_data['conversation'].append({'speaker': therabot.chatbot_id, 'text': response})
     # Synthesise response speech
-    # Temporary files for intermediate output of denoising
-    with NamedTemporaryFile(suffix='.wav') as output_wav, NamedTemporaryFile(suffix='.pcm') as output_pcm:
-
-        # Send response voice message to user
-        await update.message.reply_voice()
+    if therabot.voice:
+        # Save voice response into temporary file
+        with NamedTemporaryFile(suffix='.ogg') as voice_response:
+            # Synthesise speech
+            therabot.read_response(
+                voice_response.name,
+                context.chat_data['conversation'][-1],
+                context=context.chat_data['conversation'][:-1]
+            )
+            # Reset file cursor to be sure
+            voice_response.seek(0)
+            # Send response voice message to user
+            await update.message.reply_voice(voice_response)
     # Send response text to user
     await update.message.reply_text(response)
 
