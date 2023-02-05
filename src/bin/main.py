@@ -49,7 +49,7 @@ def main(args: Namespace) -> int:
 
     # Start
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token(configs['telegram']['token']).build()
+    application = Application.builder().token(configs['telegram']['token']).arbitrary_callback_data(True).build()
     # Add conversation handler
     application.add_handler(init_conversation_handler(configs))
     # Run the bot until the user presses Ctrl-C you press Ctrl-C or the process receives SIGINT,
