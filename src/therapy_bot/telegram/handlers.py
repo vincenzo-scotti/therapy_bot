@@ -8,10 +8,10 @@ from therapy_bot.chatbot import Chatbot
 from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import (
     CommandHandler,
+    CallbackContext,
+    ConversationHandler,
     MessageHandler,
     filters,
-    ConversationHandler,
-    CallbackContext
 )
 from .utils import EVAL_MARKUP
 from .utils import IDLE, CHAT, EVAL
@@ -27,13 +27,12 @@ global authorised_users
 
 def restricted_access(func):
     @wraps(func)
-    def wrapped(update, context, *args, **kwargs):
-        global authorised_users
+    async def wrapped(update, context, *args, **kwargs):
         user_id = update.effective_user.id
         if authorised_users is not None and user_id in authorised_users:  # Check IDs only of list is provided
-            return func(update, context, *args, **kwargs)
+            return await func(update, context, *args, **kwargs)
         else:
-            return
+            return await func(update, context, *args, **kwargs)
     return wrapped
 
 
@@ -98,7 +97,8 @@ async def get_voice_response(update: Update, context: CallbackContext) -> int:
     # Generate a written and spoken response message to a voice message
     # Save voice message into temporary file
     with NamedTemporaryFile(suffix='.ogg') as voice_message:
-        await update.message.voice.get_file().download_to_drive(custom_path=voice_message.name)
+        voice_file = await update.message.voice.get_file()
+        await voice_file.download_to_drive(voice_message.name)
         # Reset file cursor to be sure
         voice_message.seek(0)
         try:
@@ -159,18 +159,30 @@ async def stop_chatting(update: Update, context: CallbackContext) -> int:
     await update.message.reply_text(
         "Conversation mode closed."
     )
-    await update.message.reply_text(
-        "Evaluation mode started."
-    )
-    # Sent first evaluation message
-    await update.message.reply_text(
-        f"{evaluation_aspects[0]['description']}\n"
-        f"In a scale from 1 to 5, how would you rate the {evaluation_aspects[0]['id']}?",
-        reply_markup=EVAL_MARKUP
-    )
+    # Do evaluation if required
+    if evaluation_aspects is not None and len(evaluation_aspects) > 0:
+        await update.message.reply_text(
+            "Evaluation mode started."
+        )
+        # Sent first evaluation message
+        await update.message.reply_text(
+            f"{evaluation_aspects[0]['description']}\n"
+            f"In a scale from 1 to 5, how would you rate the {evaluation_aspects[0]['id']}?",
+            reply_markup=EVAL_MARKUP
+        )
 
-    return EVAL
+        return EVAL
+    else:
+        await update.message.reply_text(
+            "You can start another conversation with the /begin command or use the /stop command to stop the bot."
+        )
+        # TODO add data collection under consent?
+        ...
+        # Reset context
+        context.chat_data['conversation'] = list()
+        context.chat_data['evaluation'] = dict()
 
+        return IDLE
 
 @restricted_access
 async def evaluate_agent(update: Update, context: CallbackContext) -> int:
@@ -186,8 +198,7 @@ async def evaluate_agent(update: Update, context: CallbackContext) -> int:
             reply_markup=ReplyKeyboardRemove(),
         )
         await update.message.reply_text(
-            "You can start another conversation with the /begin command or use the /stop command to stop the bot.",
-            reply_markup=ReplyKeyboardRemove()
+            "You can start another conversation with the /begin command or use the /stop command to stop the bot."
         )
         # TODO add data collection under consent?
         ...
@@ -227,8 +238,9 @@ def init_conversation_handler(configs: Dict):
     global therabot, evaluation_aspects, authorised_users
     # Init chatbot
     therabot = Chatbot(**configs['chatbot'])
+    evaluation_aspects = configs['telegram'].get('evaluation_aspects')
     # Load list of authorised users if any, else do not restrict access
-    authorised_users_file_path = configs.get('authorised_users_file', None)
+    authorised_users_file_path = configs['telegram'].get('authorised_users_file')
     if authorised_users_file_path is not None:
         with open(authorised_users_file_path) as f:
             authorised_users = {int(i) for i in f}
