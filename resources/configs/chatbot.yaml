@@ -12,20 +12,20 @@ log_file: true
 # Telegram
 telegram:
   token: ...
-  evaluation_aspects:
-    - description: "Empathy measures how much the responses show understanding of the feelings of the other."
-      id: Empathy
-    - description: "Relevance is the measure how much the responses seem appropriate to the conversation and how much the responses are on-topic."
-      id: Relevance
-    - description: "Fluency is the measure of how much could you understand of the responses and how much the language seems accurate."
-      id: Fluency
-  authorised_users_file: ./resources/configs/users.txt
+  # evaluation_aspects:
+    # - description: "Empathy measures how much the responses show understanding of the feelings of the other."
+      # id: Empathy
+    # - description: "Relevance is the measure how much the responses seem appropriate to the conversation and how much the responses are on-topic."
+      # id: Relevance
+    # - description: "Fluency is the measure of how much could you understand of the responses and how much the language seems accurate."
+      # id: Fluency
+  # authorised_users_file: ./resources/configs/users.txt
 
 # Chatbot modules
 chatbot:
   # General
-  self_speaker_id: TherapyBot
-  other_speaker_id: User
+  chatbot_id: TherapyBot
+  user_id: User
   # Speech
   asr:
     whisper: medium.en
@@ -37,7 +37,7 @@ chatbot:
     waveglow: ./resources/models/vocoder/waveglow/waveglow_256channels_universal_v4.pt
   dgst:
     gst_predictor:
-      dgst: ./resources/dgst/dgst_therapy_dldlm_from_ctx.pt
+      model: ./resources/dgst/dgst_therapy_dldlm_from_ctx.pt
     dldlm:
       model: &therapy_dldlm ./resources/models/lm/therapy_dldlm/
       tokenizer: *therapy_dldlm
@@ -45,7 +45,7 @@ chatbot:
       prefix_token: <|prior|>
       suffix_token: <|posterior|>
       encoding_mode: resp_from_ctx
-      max_context_length: 256
+      max_context_len: 256
     generator_params:
       gst_prediction_approach: score
       # tts_speaker_id: 0

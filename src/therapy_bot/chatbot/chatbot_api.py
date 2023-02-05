@@ -11,10 +11,10 @@ from typing import List, Dict, Optional
 
 
 class Chatbot:
-    def __int__(
+    def __init__(
             self,
-            self_speaker_id: str = 'AI',
-            other_speaker_id: str = 'User',
+            chatbot_id: str = 'AI',
+            user_id: str = 'User',
             asr: Optional[Dict] = None,
             tts: Optional[Dict] = None,
             vocoder: Optional[Dict] = None,
@@ -53,7 +53,7 @@ class Chatbot:
         # Dialogue GST
         if dgst is not None:
             if 'dldlm' in dgst:
-                self.therapy_dldlm_tokenizer: GPT2Tokenizer = GPT2Tokenizer.from_pretrained(dgst['dldlm']['tokenizer']).eval()
+                self.therapy_dldlm_tokenizer: GPT2Tokenizer = GPT2Tokenizer.from_pretrained(dgst['dldlm']['tokenizer'])
                 self.therapy_dldlm: GPT2Model = GPT2Model.from_pretrained(dgst['dldlm']['model']).eval()
             else:
                 self.therapy_dldlm_tokenizer = self.therapy_dldlm = None
@@ -63,7 +63,10 @@ class Chatbot:
                     self.mellotron.gst.stl.attention.num_units,
                     (self.mellotron.gst.stl.attention.num_heads, self.mellotron.gst.stl.embed.size(0))
                 )
-                self.dgst.load_state_dict(torch.load(dgst['gst_predictor']))
+                try:
+                    self.dgst.load_state_dict(torch.load(dgst['gst_predictor']['model']))
+                except RuntimeError:
+                    self.dgst.load_state_dict(torch.load(dgst['gst_predictor']['model'], map_location=torch.device('cpu')))
             else:
                 self.dgst = None
         else:
@@ -82,7 +85,7 @@ class Chatbot:
             )
         else:
             self.chatbot = None
-        if self.dgst is not None and self.therapy_dldlm_tokenizer is not None and self.therapy_dldlm:
+        if (self.dgst is not None and self.therapy_dldlm_tokenizer is not None and self.therapy_dldlm and self.mellotron is not None) or self.tacotron2 is not None:
             self.expressive_speech_generator: ChatSpeechGenerator = ChatSpeechGenerator(
                 self.dgst,
                 self.therapy_dldlm_tokenizer,
@@ -97,8 +100,8 @@ class Chatbot:
             self.expressive_speech_generator = None
 
         # Additional parameters for text and speech generation
-        self.self_speaker_id = self_speaker_id
-        self.other_speaker_id = other_speaker_id
+        self.chatbot_id = chatbot_id
+        self.user_id = user_id
         if dlm is not None and 'generator_params' in dlm:
             self.task = dlm['generator_params'].get('task')
             self.global_label = dlm['generator_params'].get('global_label')
@@ -106,7 +109,7 @@ class Chatbot:
         else:
             self.task = self.global_label = None
             self.generate_kwargs = dict()
-        self.prompt = f'{self.self_speaker_id}:' if len(self.self_speaker_id) > 0 else ''
+        self.prompt = f'{self.chatbot_id}:' if len(self.chatbot_id) > 0 else ''
         if dgst is not None and 'generator_params' in dgst:
             self.gst_prediction_approach = dgst['generator_params'].get('gst_prediction_approach')
             self.tts_speaker_id = dgst['generator_params'].get('tts_speaker_id')
@@ -120,7 +123,7 @@ class Chatbot:
     ) -> str:
         if self.chatbot is not None:
             context = [f"{utterance['speaker']}: {utterance['text']}\n" for utterance in context]
-            response = self.chatbot(
+            response = self.chatbot.generate(
                 context,
                 prompt=self.prompt,
                 task_description=self.task,
@@ -136,9 +139,11 @@ class Chatbot:
         if self.whisper is not None:
             # Use OpenAI Whisper to generate the transcription
             result = self.whisper.transcribe(audio_file_path)
-            return result['text']
+            transcription = result['text']
         else:
             raise ValueError("Speech recognition module is not enabled in the current configuration.")
+
+        return transcription
 
     def read_response(
             self,
