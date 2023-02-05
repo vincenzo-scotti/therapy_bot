@@ -86,30 +86,31 @@ async def get_text_response(update: Update, context: CallbackContext) -> int:
 @restricted_access
 async def get_voice_response(update: Update, context: CallbackContext) -> int:
     # Generate a written and spoken response message to a voice message
-    if therabot.transcripton:
-        # Save voice message into temporary file
-        with NamedTemporaryFile(suffix='.ogg') as voice_message:
-            await update.message.voice.get_file().download_to_drive(custom_path=voice_message.name)
-            # Reset file cursor to be sure
-            voice_message.seek(0)
+    # Save voice message into temporary file
+    with NamedTemporaryFile(suffix='.ogg') as voice_message:
+        await update.message.voice.get_file().download_to_drive(custom_path=voice_message.name)
+        # Reset file cursor to be sure
+        voice_message.seek(0)
+        try:
             # Get message text and append it to the context
             context.chat_data['conversation'].append(
                 {'speaker': therabot.user_id, 'text': therabot.transcribe_message(voice_message.name)}
             )
-    else:
-        # Signal
-        await update.message.reply_text(
-            "I'm sorry, the transcription service is not enabled in the current configuration. "
-            "You're welcome to write a text message."
-        )
-        return CHAT
+        except ValueError as e:
+            logging.error(e)
+            # Signal to the user that the transcription module is not avaialble
+            await update.message.reply_text(
+                "I'm sorry, the transcription service is not enabled in the current configuration. "
+                "You're welcome to write a text message."
+            )
+            return CHAT
     # Generate response using neural chatbot
     response = therabot(context.chat_data['conversation'])
     context.chat_data['conversation'].append({'speaker': therabot.chatbot_id, 'text': response})
     # Synthesise response speech
-    if therabot.voice:
-        # Save voice response into temporary file
-        with NamedTemporaryFile(suffix='.ogg') as voice_response:
+    # Save voice response into temporary file
+    with NamedTemporaryFile(suffix='.ogg') as voice_response:
+        try:
             # Synthesise speech
             therabot.read_response(
                 voice_response.name,
@@ -120,6 +121,9 @@ async def get_voice_response(update: Update, context: CallbackContext) -> int:
             voice_response.seek(0)
             # Send response voice message to user
             await update.message.reply_voice(voice_response)
+        except ValueError as e:
+            logging.error(e)
+            pass
     # Send response text to user
     await update.message.reply_text(response)
 
