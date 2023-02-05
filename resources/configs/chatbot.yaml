@@ -6,8 +6,8 @@ sessions_directory_path: ./sessions/
 random_seed: &random_seed 2307
 mixed_precision: true
 
-log_level: DEBUG
-log_file: true
+log_level: INFO
+# log_file: true
 
 # Telegram
 telegram:
@@ -37,7 +37,7 @@ chatbot:
     waveglow: ./resources/models/vocoder/waveglow/waveglow_256channels_universal_v4.pt
   dgst:
     gst_predictor:
-      model: ./resources/dgst/dgst_therapy_dldlm_from_ctx.pt
+      model: ./resources/models/dgst/dgst_therapy_dldlm_from_ctx.pt
     dldlm:
       model: &therapy_dldlm ./resources/models/lm/therapy_dldlm/
       tokenizer: *therapy_dldlm
