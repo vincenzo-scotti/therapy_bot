@@ -6,8 +6,9 @@ sessions_directory_path: ./sessions/
 random_seed: &random_seed 2307
 mixed_precision: true
 
-log_level: INFO
+log_level: CRITICAL
 # log_file: true
+log_file: false
 
 # Telegram
 telegram:
@@ -20,6 +21,7 @@ telegram:
     # - description: "Fluency is the measure of how much could you understand of the responses and how much the language seems accurate."
       # id: Fluency
   # authorised_users_file: ./resources/configs/users.txt
+  authorised_users_file: ./resources/configs/users.txt
 
 # Chatbot modules
 chatbot:
@@ -62,4 +64,4 @@ chatbot:
         top_k: 0
         temperature: 1.0
         do_sample: true
-        max_new_tokens: 128
+        max_new_tokens: 256

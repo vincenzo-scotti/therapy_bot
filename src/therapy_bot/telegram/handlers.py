@@ -44,7 +44,7 @@ async def start_bot(update: Update, context: CallbackContext) -> int:
     context.chat_data['evaluation'] = dict()
     # Give user instructions
     await update.message.reply_text(
-        "Welcome to TherapyBot bot. "
+        "Welcome to TherapyBot. "
         "Use the command /begin to start a conversation and /end to end the conversation. "
         "At the end of each conversation you will be asked to rate the responses of TherapyBot."
         "Use the command /start to reset the bot and /stop to stop the bot."
