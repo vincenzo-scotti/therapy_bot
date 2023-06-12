@@ -1,7 +1,7 @@
 # TheraBot
 
 A Telegram chatbot for therapy.
-This repository contains the code to run the chatbot developed in the Ph.D. thesis "[Generative Empathetic Data-Driven Conversational Agents for Mental Healthcare](https://www.overleaf.com/read/bvfznvsnrgdc)".
+This repository contains the code to run the chatbot developed in the Ph.D. thesis "[Generative Empathetic Data-Driven Conversational Agents for Mental Healthcare](https://www.politesi.polimi.it/handle/10589/202713)".
 
 ## Repository structure
 
@@ -109,6 +109,6 @@ If you are willing to use our code or our models, please cite our work through t
   title     = {Generative Empathetic Data-Driven Conversational Agents for Mental Healthcare},
   school    = {Polytechnic University of Milan, Italy},
   year      = {2023},
-  url       = {T.B.D.}
+  url       = {https://www.politesi.polimi.it/handle/10589/202713}
 }
 ```
